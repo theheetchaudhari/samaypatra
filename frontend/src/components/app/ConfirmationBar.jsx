@@ -1,10 +1,10 @@
+export default function ConfirmationBar({ validationResult }) {
+  const isValid = !validationResult || validationResult.valid;
 
-
-export default function ConfirmationBar() {
   return (
     <div className="confirmation-bar">
       <button className="btn-secondary">Edit Details</button>
-      <button className="btn-primary">Confirm & Sync</button>
+      <button className="btn-primary" disabled={!isValid}>Confirm & Sync</button>
     </div>
   );
 }

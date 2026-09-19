@@ -1,9 +1,16 @@
+export default function WarningPanel({ validationResult }) {
+  if (!validationResult || validationResult.valid) {
+    return null;
+  }
 
-
-export default function WarningPanel() {
   return (
     <div className="warning-panel">
-      <strong>Note:</strong> Timezone was not explicitly stated in the source text. Defaulting to local time.
+      <strong>Attention Required:</strong>
+      <ul>
+        {validationResult.errors.map((error, index) => (
+          <li key={index}>{error}</li>
+        ))}
+      </ul>
     </div>
   );
 }

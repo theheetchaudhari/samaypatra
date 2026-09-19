@@ -5,6 +5,9 @@ const {
   ConverseCommand
 } = require("@aws-sdk/client-bedrock-runtime");
 
+const { validateEvent } = require("./validation.js");
+const { createPresignedUploadUrl } = require("./s3.js");
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -69,6 +72,21 @@ function safeParseBedrockResponse(raw) {
 }
 
 // ---------------------------------------------------------------------------
+// Per-event validation (T5.2)
+// Maps each event through validateEvent() without mutating the originals.
+// Returns an object that is attached to the success response.
+// ---------------------------------------------------------------------------
+function validateEvents(events) {
+  const results = events.map((event) => {
+    const { valid, errors } = validateEvent(event);
+    return { event, valid, errors };
+  });
+
+  const allValid = results.every((r) => r.valid);
+  return { valid: allValid, results };
+}
+
+// ---------------------------------------------------------------------------
 // Bedrock client (lazily initialised so unit tests can override before import)
 // ---------------------------------------------------------------------------
 let _bedrockClient = null;
@@ -117,6 +135,41 @@ exports.extractHandler = async (event) => {
         headers,
         body: JSON.stringify({ error: "Invalid JSON" })
       };
+    }
+
+    // Route: Request S3 presigned upload URL
+    const path =
+      event.rawPath ||
+      event.path ||
+      event.requestContext?.http?.path ||
+      "";
+
+    const isUploadUrlRequest =
+      path.endsWith("/upload-url") ||
+      body.action === "upload-url" ||
+      (body.fileName && body.contentType && !body.text);
+
+    if (isUploadUrlRequest) {
+      try {
+        const uploadResult = await createPresignedUploadUrl({
+          fileName: body.fileName,
+          contentType: body.contentType
+        });
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify(uploadResult)
+        };
+      } catch (uploadErr) {
+        const status = uploadErr.statusCode || 500;
+        return {
+          statusCode: status,
+          headers,
+          body: JSON.stringify({
+            error: uploadErr.message || "Failed to generate upload URL"
+          })
+        };
+      }
     }
 
     const { text } = body;
@@ -175,10 +228,17 @@ exports.extractHandler = async (event) => {
       };
     }
 
+    // Validate every extracted event (field-level, non-mutating)
+    const validation = validateEvents(parsed.events);
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, events: parsed.events })
+      body: JSON.stringify({
+        success: true,
+        events: parsed.events,
+        validation
+      })
     };
   } catch (error) {
     console.error("Extraction error:", error);

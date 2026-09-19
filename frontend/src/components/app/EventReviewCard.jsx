@@ -3,15 +3,15 @@ import SourceEvidence from './SourceEvidence';
 import WarningPanel from './WarningPanel';
 import ConfirmationBar from './ConfirmationBar';
 
-export default function EventReviewCard({ event }) {
+export default function EventReviewCard({ event, validationResult }) {
   if (!event) return null;
 
   return (
     <div className="event-review-card">
       <EventDetails event={event} />
       <SourceEvidence text={event.sourceEvidence} />
-      <WarningPanel />
-      <ConfirmationBar />
+      <WarningPanel validationResult={validationResult} />
+      <ConfirmationBar validationResult={validationResult} />
     </div>
   );
 }
