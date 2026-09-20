@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 /**
  * auth.js — Google OAuth authorization-code flow for SAMAYPATRA (T7.2 / T7.4)
@@ -361,7 +361,7 @@ async function handleAuthGoogleCallback(event) {
   );
 
   const cookieStr =
-    `sam_session=${encryptedSession}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=${SESSION_COOKIE_MAX_AGE_S}`;
+    `sam_session=${encryptedSession}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=${SESSION_COOKIE_MAX_AGE_S}; Partitioned`;
 
   return {
     statusCode: 302,
