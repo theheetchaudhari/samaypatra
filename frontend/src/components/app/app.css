@@ -530,3 +530,148 @@
   color: var(--text-muted);
 }
 
+
+
+/* --------------------------------------------------------------------------
+   T8.1 — Google Calendar Sync styles
+   -------------------------------------------------------------------------- */
+
+/* Page-level banner shown after OAuth redirect (?connected=true) */
+.calendar-connected-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  background-color: rgba(96, 108, 56, 0.10);
+  border: 1px solid var(--color-olive-leaf);
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--color-black-forest);
+  animation: fadeIn 0.4s ease;
+}
+
+.calendar-connected-icon {
+  color: var(--color-olive-leaf);
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Confirmation bar — overrides earlier definition to stack actions + feedback */
+.confirmation-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.confirmation-bar-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* "Connect Google Calendar" button */
+.btn-connect-google {
+  background-color: transparent;
+  color: var(--color-black-forest);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--color-olive-leaf);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-connect-google:hover {
+  background-color: rgba(96, 108, 56, 0.10);
+}
+
+/* Sync loading state */
+.sync-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-olive-leaf);
+  font-weight: 600;
+}
+
+.sync-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(96, 108, 56, 0.25);
+  border-top-color: var(--color-olive-leaf);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Sync success state */
+.sync-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  background-color: rgba(96, 108, 56, 0.08);
+  border: 1px solid var(--color-olive-leaf);
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-black-forest);
+  animation: fadeIn 0.3s ease;
+}
+
+.sync-success-icon {
+  color: var(--color-olive-leaf);
+  font-weight: 700;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.sync-calendar-link {
+  color: var(--color-olive-leaf);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sync-calendar-link:hover {
+  color: var(--color-black-forest);
+}
+
+/* Sync error state */
+.sync-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  background-color: rgba(188, 108, 37, 0.07);
+  border-left: 4px solid var(--color-copper);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-black-forest);
+  animation: fadeIn 0.3s ease;
+}
+
+.sync-error-icon {
+  color: var(--color-copper);
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppHeader from '../components/app/AppHeader';
 import InputPanel from '../components/app/InputPanel';
 import ExtractionStatus from '../components/app/ExtractionStatus';
@@ -54,6 +54,21 @@ export default function AppPage() {
   const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
   const [uploadError, setUploadError] = useState('');
   const [uploadedS3Key, setUploadedS3Key] = useState(null);
+
+  // Google Calendar connection state (T8.1)
+  // Detected from ?connected=true query param set by OAuth callback redirect
+  const [calendarConnected, setCalendarConnected] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('connected') === 'true') {
+      setCalendarConnected(true);
+      // Clean the URL without triggering a reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('connected');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
 
   const handleExtract = async () => {
     if (!inputText.trim()) {
@@ -142,6 +157,15 @@ export default function AppPage() {
   return (
     <section className="app-container">
       <AppHeader />
+
+      {calendarConnected && (
+        <div className="calendar-connected-banner" role="status">
+          <span className="calendar-connected-icon">&#10003;</span>
+          Google Calendar connected successfully! You can now click{' '}
+          <strong>Confirm &amp; Sync</strong> on any extracted event.
+        </div>
+      )}
+
       <InputPanel 
         activeTab={activeTab}
         onTabChange={setActiveTab}

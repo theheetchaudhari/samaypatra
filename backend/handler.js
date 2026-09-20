@@ -9,6 +9,7 @@ const { validateEvent } = require("./validation.js");
 const { createPresignedUploadUrl } = require("./s3.js");
 const { extractTextFromS3 } = require("./textract.js");
 const { handleAuthGoogle, handleAuthGoogleCallback } = require("./auth.js");
+const { handleCreateCalendarEvent } = require("./calendar.js");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -135,6 +136,32 @@ exports.extractHandler = async (event) => {
 
     if (path === "/auth/google/callback" || path.endsWith("/auth/google/callback")) {
       return await handleAuthGoogleCallback(event);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Calendar route — POST /calendar/events (requires OAuth session cookie)
+    // OPTIONS is handled here for CORS preflight with credentials support.
+    // ---------------------------------------------------------------------------
+    if (path === "/calendar/events" || path.endsWith("/calendar/events")) {
+      const method =
+        event.httpMethod ||
+        event.requestContext?.http?.method ||
+        "POST";
+
+      if (method === "OPTIONS") {
+        return {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin":      "https://samaypatra.vercel.app",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Headers":     "Content-Type",
+            "Access-Control-Allow-Methods":     "OPTIONS,POST"
+          },
+          body: ""
+        };
+      }
+
+      return await handleCreateCalendarEvent(event);
     }
 
     // Handle OPTIONS request for CORS preflight

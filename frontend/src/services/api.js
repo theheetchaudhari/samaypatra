@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://94t337v214.execute-api.ap-south-1.amazonaws.com";
+
+export { API_BASE_URL };
 
 export async function extractText(text) {
   try {
@@ -65,3 +69,33 @@ export async function uploadFileToS3(uploadUrl, file) {
   }
 }
 
+/**
+ * POST /calendar/events
+ *
+ * Creates a Google Calendar event after explicit user confirmation.
+ * Uses credentials:'include' so the encrypted session cookie is sent.
+ *
+ * Returns: { success, eventId, htmlLink, title, start, end }
+ * Throws an Error with .status and .code populated on failure.
+ *
+ * NEVER receives or handles OAuth tokens — tokens live in HttpOnly cookies.
+ */
+export async function createCalendarEvent(eventPayload) {
+  const response = await fetch(`${API_BASE_URL}/calendar/events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(eventPayload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const err = new Error(data.message || data.error || `HTTP ${response.status}`);
+    err.status = response.status;
+    err.code   = data.error;
+    throw err;
+  }
+
+  return data;
+}

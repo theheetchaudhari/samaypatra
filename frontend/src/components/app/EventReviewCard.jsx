@@ -11,7 +11,7 @@ export default function EventReviewCard({ event, validationResult }) {
       <EventDetails event={event} />
       <SourceEvidence text={event.sourceEvidence} />
       <WarningPanel validationResult={validationResult} />
-      <ConfirmationBar validationResult={validationResult} />
+      <ConfirmationBar event={event} validationResult={validationResult} />
     </div>
   );
 }
