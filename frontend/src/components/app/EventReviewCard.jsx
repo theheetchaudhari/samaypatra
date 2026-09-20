@@ -8,6 +8,12 @@ export default function EventReviewCard({ event, validationResult }) {
 
   return (
     <div className="event-review-card">
+      {event.isFallback && (
+        <div className="fallback-badge">
+          <span className="fallback-icon">⚠️</span>
+          Demo extraction mode — Bedrock temporarily unavailable
+        </div>
+      )}
       <EventDetails event={event} />
       <SourceEvidence text={event.sourceEvidence} />
       <WarningPanel validationResult={validationResult} />

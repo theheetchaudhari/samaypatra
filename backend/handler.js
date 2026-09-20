@@ -6,6 +6,7 @@ const {
 } = require("@aws-sdk/client-bedrock-runtime");
 
 const { validateEvent } = require("./validation.js");
+const { parseFallback } = require("./fallbackParser.js");
 const { createPresignedUploadUrl } = require("./s3.js");
 const { extractTextFromS3 } = require("./textract.js");
 const { handleAuthGoogle, handleAuthGoogleCallback } = require("./auth.js");
@@ -263,33 +264,54 @@ exports.extractHandler = async (event) => {
 
     // Invoke Nova Lite
     let bedrockResponse;
+    let fallbackTriggered = false;
+    let fallbackParsed = null;
+    
     try {
       bedrockResponse = await getBedrockClient().send(command);
     } catch (err) {
-      console.error("Bedrock invocation error:", err);
-      return {
-        statusCode: 502,
-        headers,
-        body: JSON.stringify({ error: "Upstream model invocation failed" })
-      };
+      console.error("Bedrock invocation error:", err.name, err.message);
+      
+      const isThrottlingError = 
+        err.name === "ThrottlingException" || 
+        err.name === "TooManyTokensException" || 
+        err.message.includes("Too many tokens") ||
+        err.message.includes("throttle");
+        
+      if (isThrottlingError) {
+        console.warn("Bedrock throttled. Triggering deterministic fallback.");
+        fallbackTriggered = true;
+        fallbackParsed = parseFallback(text);
+      } else {
+        return {
+          statusCode: 502,
+          headers,
+          body: JSON.stringify({ error: "Upstream model invocation failed" })
+        };
+      }
     }
 
-    // Extract text from the response
-    const rawText =
-      bedrockResponse?.output?.message?.content?.[0]?.text ?? "";
-
-    // Parse and validate the model output
     let parsed;
-    try {
-      parsed = safeParseBedrockResponse(rawText);
-    } catch (parseErr) {
-      console.error("Bedrock JSON parse error:", parseErr.message);
-      console.error("Raw model output:", rawText);
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: "Model returned unexpected output" })
-      };
+    
+    if (fallbackTriggered) {
+      parsed = fallbackParsed;
+    } else {
+      // Extract text from the response
+      const rawText =
+        bedrockResponse?.output?.message?.content?.[0]?.text ?? "";
+
+      // Parse and validate the model output
+      try {
+        parsed = safeParseBedrockResponse(rawText);
+      } catch (parseErr) {
+        console.error("Bedrock JSON parse error:", parseErr.message);
+        console.error("Raw model output:", rawText);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: "Model returned unexpected output" })
+        };
+      }
     }
 
     // Validate every extracted event (field-level, non-mutating)
