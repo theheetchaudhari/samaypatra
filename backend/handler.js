@@ -8,6 +8,7 @@ const {
 const { validateEvent } = require("./validation.js");
 const { createPresignedUploadUrl } = require("./s3.js");
 const { extractTextFromS3 } = require("./textract.js");
+const { handleAuthGoogle, handleAuthGoogleCallback } = require("./auth.js");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -118,6 +119,24 @@ exports.extractHandler = async (event) => {
   };
 
   try {
+    // Resolve request path (API Gateway v1 and v2)
+    const path =
+      event.rawPath ||
+      event.path ||
+      event.requestContext?.http?.path ||
+      "";
+
+    // ---------------------------------------------------------------------------
+    // OAuth routes — handled before any JSON body parsing
+    // ---------------------------------------------------------------------------
+    if (path === "/auth/google" || path.endsWith("/auth/google")) {
+      return await handleAuthGoogle();
+    }
+
+    if (path === "/auth/google/callback" || path.endsWith("/auth/google/callback")) {
+      return await handleAuthGoogleCallback(event);
+    }
+
     // Handle OPTIONS request for CORS preflight
     if (
       event.httpMethod === "OPTIONS" ||
@@ -139,11 +158,6 @@ exports.extractHandler = async (event) => {
     }
 
     // Route: Request S3 presigned upload URL
-    const path =
-      event.rawPath ||
-      event.path ||
-      event.requestContext?.http?.path ||
-      "";
 
     const isUploadUrlRequest =
       path.endsWith("/upload-url") ||

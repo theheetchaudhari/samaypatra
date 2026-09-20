@@ -16,6 +16,7 @@
     "@aws-sdk/client-textract": "^3.1136.0",
     "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "googleapis": "^148.0.0"
   }
 }
