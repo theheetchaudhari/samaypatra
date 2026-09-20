@@ -155,14 +155,20 @@ exports.extractHandler = async (event) => {
           headers: {
             "Access-Control-Allow-Origin":      "https://samaypatra.vercel.app",
             "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Allow-Headers":     "Content-Type",
+            "Access-Control-Allow-Headers":     "content-type",
             "Access-Control-Allow-Methods":     "OPTIONS,POST"
           },
           body: ""
         };
       }
 
-      return await handleCreateCalendarEvent(event);
+      const response = await handleCreateCalendarEvent(event);
+      response.headers = {
+        ...response.headers,
+        "Access-Control-Allow-Origin": "https://samaypatra.vercel.app",
+        "Access-Control-Allow-Credentials": "true"
+      };
+      return response;
     }
 
     // Handle OPTIONS request for CORS preflight
