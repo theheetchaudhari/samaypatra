@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { createCalendarEvent, API_BASE_URL } from '../../services/api';
 
 /**
@@ -25,6 +25,13 @@ export default function ConfirmationBar({ event, validationResult }) {
 
   // Navigate to the OAuth initiation URL (browser navigation, not fetch)
   function handleConnectGoogle() {
+    try {
+      if (event) {
+        sessionStorage.setItem('samaypatra_pending_event', JSON.stringify({ event, validationResult }));
+      }
+    } catch (e) {
+      console.error('Failed to save pending event to sessionStorage', e);
+    }
     window.location.href = `${API_BASE_URL}/auth/google`;
   }
 

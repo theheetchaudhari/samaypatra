@@ -67,6 +67,23 @@ export default function AppPage() {
       const url = new URL(window.location.href);
       url.searchParams.delete('connected');
       window.history.replaceState({}, '', url.toString());
+
+      try {
+        const pendingJSON = sessionStorage.getItem('samaypatra_pending_event');
+        if (pendingJSON) {
+          const parsed = JSON.parse(pendingJSON);
+          if (parsed && parsed.event) {
+            setEvents([parsed.event]);
+            if (parsed.validationResult) {
+              setValidation({ results: [parsed.validationResult] });
+            }
+            setExtractionStatus('success');
+          }
+          sessionStorage.removeItem('samaypatra_pending_event');
+        }
+      } catch (err) {
+        console.error('Failed to restore pending event:', err);
+      }
     }
   }, []);
 
