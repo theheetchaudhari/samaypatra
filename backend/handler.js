@@ -7,6 +7,7 @@ const {
 
 const { validateEvent } = require("./validation.js");
 const { createPresignedUploadUrl } = require("./s3.js");
+const { extractTextFromS3 } = require("./textract.js");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -168,6 +169,28 @@ exports.extractHandler = async (event) => {
           body: JSON.stringify({
             error: uploadErr.message || "Failed to generate upload URL"
           })
+        };
+      }
+    }
+
+    // Route: S3 object extraction via Textract
+    if (body.s3Key) {
+      try {
+        const text = await extractTextFromS3(body.s3Key);
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            text
+          })
+        };
+      } catch (err) {
+        console.error("Textract error:", err);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: "Failed to extract text from document" })
         };
       }
     }
